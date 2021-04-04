@@ -26,6 +26,8 @@
 
 #include "ignition/rendering/ogre2/Export.hh"
 
+#include <Compositor/OgreCompositorShadowNode.h>
+
 namespace Ogre
 {
   class Root;
@@ -222,6 +224,28 @@ namespace ignition
       /// \param[in] _name Name to assign to the object
       protected: virtual bool InitObject(Ogre2ObjectPtr _object,
                      unsigned int _id, const std::string &_name);
+
+      /// \brief Create a compositor shadow node with the same number of shadow
+      /// textures as the number of shadow casting lights
+      protected: void UpdateShadowNode();
+
+      /// \brief Create ogre compositor shadow node definition. The function
+      /// takes a vector of parameters that describe the type, number, and
+      /// resolution of textures create. Note that it is not necessary to
+      /// create separate textures for each shadow map. It is more efficient to
+      /// define a large texture atlas which is composed of multiple shadow
+      /// maps each occupying a subspace within the texture. This function is
+      /// similar to Ogre::ShadowNodeHelper::createShadowNodeWithSettings but
+      /// fixes a problem with the shadow map index when directional and spot
+      /// light shadow textures are defined on two different texture atlases.
+      /// \param[in] _compositorManager ogre compositor manager
+      /// \param[in] _shadowNodeName Name of the shadow node definition
+      /// \param[in] _shadowParams Parameters containing the shadow type,
+      /// texure resolution and position on the texture atlas.
+      private: void CreateShadowNodeWithSettings(
+          Ogre::CompositorManager2 *_compositorManager,
+          const std::string &_shadowNodeName,
+          const Ogre::ShadowNodeHelper::ShadowParamVec &_shadowParams);
 
       // Documentation inherited
       protected: virtual LightStorePtr Lights() const override;
