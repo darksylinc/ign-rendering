@@ -208,6 +208,12 @@ unsigned int Ogre2Camera::RenderTextureGLId() const
 }
 
 //////////////////////////////////////////////////
+void Ogre2Camera::SwapFromThread()
+{
+  this->renderTexture->SwapFromThread();
+}
+
+//////////////////////////////////////////////////
 void Ogre2Camera::SetShadowsNodeDefDirty()
 {
   if (!this->renderTexture)

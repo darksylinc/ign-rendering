@@ -278,21 +278,30 @@ void Ogre2RenderTarget::BuildCompositor()
 //////////////////////////////////////////////////
 void Ogre2RenderTarget::DestroyCompositor()
 {
-  if (!this->ogreCompositorWorkspace)
+  if (!this->ogreCompositorWorkspace && !this->ogreCompositorWorkspaceInDisplay)
     return;
 
   auto engine = Ogre2RenderEngine::Instance();
   auto ogreRoot = engine->OgreRoot();
   Ogre::CompositorManager2 *ogreCompMgr = ogreRoot->getCompositorManager2();
-  this->ogreCompositorWorkspace->setListener(nullptr);
-  ogreCompMgr->removeWorkspace(this->ogreCompositorWorkspace);
+  if (this->ogreCompositorWorkspace)
+  {
+    this->ogreCompositorWorkspace->setListener(nullptr);
+    ogreCompMgr->removeWorkspace(this->ogreCompositorWorkspace);
+  }
+  if (ogreCompositorWorkspaceInDisplay)
+  {
+    this->ogreCompositorWorkspaceInDisplay->setListener(nullptr);
+    ogreCompMgr->removeWorkspace(this->ogreCompositorWorkspaceInDisplay);
+  }
   ogreCompMgr->removeWorkspaceDefinition(this->ogreCompositorWorkspaceDefName);
   ogreCompMgr->removeNodeDefinition(this->ogreCompositorWorkspaceDefName +
       "/" + this->dataPtr->kBaseNodeName);
-  ogreCompMgr->removeNodeDefinition(this->ogreCompositorWorkspaceDefName +
-      "/" + this->dataPtr->kFinalNodeName);
+  //ogreCompMgr->removeNodeDefinition(this->ogreCompositorWorkspaceDefName +
+  //    "/" + this->dataPtr->kFinalNodeName);
 
   this->ogreCompositorWorkspace = nullptr;
+  this->ogreCompositorWorkspaceInDisplay = nullptr;
   delete this->dataPtr->rtListener;
   this->dataPtr->rtListener = nullptr;
 }
@@ -445,11 +454,23 @@ void Ogre2RenderTarget::UpdateBackgroundColor()
   if (this->colorDirty)
   {
     // set background color in compositor clear pass def
-    auto nodeSeq = this->ogreCompositorWorkspace->getNodeSequence();
-    auto pass = nodeSeq[0]->_getPasses()[0]->getDefinition();
-    auto clearPass = dynamic_cast<const Ogre::CompositorPassClearDef *>(pass);
-    const_cast<Ogre::CompositorPassClearDef *>(clearPass)->mColourValue =
-        this->ogreBackgroundColor;
+    if (this->ogreCompositorWorkspace)
+    {
+      auto nodeSeq = this->ogreCompositorWorkspace->getNodeSequence();
+      auto pass = nodeSeq[0]->_getPasses()[0]->getDefinition();
+      auto clearPass = dynamic_cast<const Ogre::CompositorPassClearDef *>(pass);
+      const_cast<Ogre::CompositorPassClearDef *>(clearPass)->mColourValue =
+          this->ogreBackgroundColor;
+    }
+
+    if (this->ogreCompositorWorkspaceInDisplay)
+    {
+      auto nodeSeq = this->ogreCompositorWorkspaceInDisplay->getNodeSequence();
+      auto pass = nodeSeq[0]->_getPasses()[0]->getDefinition();
+      auto clearPass = dynamic_cast<const Ogre::CompositorPassClearDef *>(pass);
+      const_cast<Ogre::CompositorPassClearDef *>(clearPass)->mColourValue =
+          this->ogreBackgroundColor;
+    }
 
     this->colorDirty = false;
   }
@@ -692,18 +713,27 @@ void Ogre2RenderTexture::RebuildTarget()
 //////////////////////////////////////////////////
 void Ogre2RenderTexture::DestroyTarget()
 {
-  if (nullptr == this->ogreTexture)
+  if (nullptr == this->ogreTexture && nullptr == this->ogreTextureInDisplay)
     return;
 
   auto &manager = Ogre::TextureManager::getSingleton();
-  manager.unload(this->ogreTexture->getName());
-  manager.remove(this->ogreTexture->getName());
+  if (this->ogreTexture)
+  {
+    manager.unload(this->ogreTexture->getName());
+    manager.remove(this->ogreTexture->getName());
+  }
+  if (this->ogreTextureInDisplay)
+  {
+    manager.unload(this->ogreTextureInDisplay->getName());
+    manager.remove(this->ogreTextureInDisplay->getName());
+  }
 
   // TODO(anyone) there is memory leak when a render texture is destroyed.
   // The RenderSystem::_cleanupDepthBuffers method used in ogre1 does not
   // seem to work in ogre2
 
   this->ogreTexture = nullptr;
+  this->ogreTextureInDisplay = nullptr;
 }
 
 //////////////////////////////////////////////////
@@ -733,9 +763,14 @@ void Ogre2RenderTexture::BuildTarget()
       ogre2FSAAWarn = true;
     }
   }
+  fsaa = 0;
+
+  std::string texNameSuffix;
+  if (this->ogreTextureInDisplay)
+    texNameSuffix += "InDisplay1";
 
   // Ogre 2 PBS expects gamma correction to be enabled
-  this->ogreTexture = (manager.createManual(this->name, "General",
+  this->ogreTexture = (manager.createManual(this->name + texNameSuffix, "General",
       Ogre::TEX_TYPE_2D, this->width, this->height, 0, ogreFormat,
       Ogre::TU_RENDERTARGET, 0, true, fsaa)).get();
 }
@@ -750,6 +785,21 @@ unsigned int Ogre2RenderTexture::GLId() const
   this->ogreTexture->getCustomAttribute("GLID", &texId);
 
   return static_cast<unsigned int>(texId);
+}
+
+//////////////////////////////////////////////////
+void Ogre2RenderTexture::SwapFromThread()
+{
+  std::swap( this->ogreCompositorWorkspace, this->ogreCompositorWorkspaceInDisplay );
+  std::swap( this->ogreTexture, this->ogreTextureInDisplay );
+
+  // If this is the first time swapping, we're being aware we're in
+  // different threads, thus initialize the 2nd pair of resources
+  if (!this->ogreTexture && this->ogreTextureInDisplay)
+  {
+    BuildTarget();
+    BuildCompositor();
+  }
 }
 
 //////////////////////////////////////////////////
