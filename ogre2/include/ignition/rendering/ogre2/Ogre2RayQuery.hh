@@ -49,7 +49,8 @@ namespace ignition
                 const math::Vector2d &_coord);
 
       // Documentation inherited
-      public: virtual RayQueryResult ClosestPoint();
+      public: virtual RayQueryResult ClosestPoint(
+            bool _forceSceneUpdate = true);
 
       /// \brief Private data pointer
       private: std::unique_ptr<Ogre2RayQueryPrivate> dataPtr;

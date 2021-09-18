@@ -73,13 +73,18 @@ void Ogre2RayQuery::SetFromCamera(const CameraPtr &_camera,
 }
 
 //////////////////////////////////////////////////
-RayQueryResult Ogre2RayQuery::ClosestPoint()
+RayQueryResult Ogre2RayQuery::ClosestPoint(bool _forceSceneUpdate)
 {
   RayQueryResult result;
   Ogre2ScenePtr ogreScene =
       std::dynamic_pointer_cast<Ogre2Scene>(this->Scene());
   if (!ogreScene)
     return result;
+
+  if (_forceSceneUpdate)
+  {
+    ogreScene->OgreSceneManager()->updateSceneGraph();
+  }
 
   Ogre::Ray mouseRay(Ogre2Conversions::Convert(this->origin),
       Ogre2Conversions::Convert(this->direction));
