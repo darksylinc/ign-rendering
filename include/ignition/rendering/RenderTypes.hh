@@ -58,6 +58,8 @@ namespace ignition
     class GaussianNoisePass;
     class Geometry;
     class GizmoVisual;
+    class GlobalIlluminationBase;
+    class GlobalIlluminationVct;
     class GpuRays;
     class Grid;
     class Heightmap;
@@ -218,6 +220,14 @@ namespace ignition
     /// \typedef ParticleEmitterPtr
     /// \brief Shared pointer to ParticleEmitter
     typedef shared_ptr<ParticleEmitter> ParticleEmitterPtr;
+
+    /// \typedef GlobalIlluminationBasePtr
+    /// \brief Shared pointer to GlobalIlluminationBase
+    typedef shared_ptr<GlobalIlluminationBase> GlobalIlluminationBasePtr;
+
+    /// \typedef GlobalIlluminationVctPtr
+    /// \brief Shared pointer to GlobalIlluminationVct
+    typedef shared_ptr<GlobalIlluminationVct> GlobalIlluminationVctPtr;
 
     /// \typedef PointLightPtr
     /// \brief Shared pointer to PointLight
