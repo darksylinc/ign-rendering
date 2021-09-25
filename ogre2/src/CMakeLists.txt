@@ -30,6 +30,9 @@ set_property(
 target_include_directories(${ogre2_target}
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
+  # VCT GI needs this
+  ${OGRE2_INCLUDE}/Hlms/Pbs
+  ${OGRE2_INCLUDE}/Hlms/Common
 )
 
 target_link_libraries(${ogre2_target}
@@ -40,6 +43,9 @@ target_link_libraries(${ogre2_target}
     ${OPENGL_LIBRARIES}
     terra
     IgnOGRE2::IgnOGRE2)
+
+target_compile_definitions(${ogre2_target} PRIVATE $<$<CONFIG:Debug>:DEBUG=1 _DEBUG=1>)
+
 
 set (versioned ${CMAKE_SHARED_LIBRARY_PREFIX}${PROJECT_NAME_LOWER}-${engine_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
 set (unversioned ${CMAKE_SHARED_LIBRARY_PREFIX}${PROJECT_NAME_NO_VERSION_LOWER}-${engine_name}${CMAKE_SHARED_LIBRARY_SUFFIX})

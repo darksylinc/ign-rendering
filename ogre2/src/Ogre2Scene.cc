@@ -26,6 +26,7 @@
 #include "ignition/rendering/ogre2/Ogre2Conversions.hh"
 #include "ignition/rendering/ogre2/Ogre2DepthCamera.hh"
 #include "ignition/rendering/ogre2/Ogre2GizmoVisual.hh"
+#include "ignition/rendering/ogre2/Ogre2GlobalIlluminationVct.hh"
 #include "ignition/rendering/ogre2/Ogre2GpuRays.hh"
 #include "ignition/rendering/ogre2/Ogre2Grid.hh"
 #include "ignition/rendering/ogre2/Ogre2Heightmap.hh"
@@ -95,6 +96,9 @@ class ignition::rendering::Ogre2ScenePrivate
 
   /// \brief Name of shadow compositor node
   public: const std::string kShadowNodeName = "PbsMaterialsShadowNode";
+
+  /// \brief Active GI solution, if any
+  GlobalIlluminationBasePtr activeGi;
 };
 
 using namespace ignition;
@@ -1234,6 +1238,16 @@ ParticleEmitterPtr Ogre2Scene::CreateParticleEmitterImpl(unsigned int _id,
 }
 
 //////////////////////////////////////////////////
+GlobalIlluminationVctPtr Ogre2Scene::CreateGlobalIlluminationVctImpl(
+  unsigned int _id, const std::string &_name)
+{
+  Ogre2GlobalIlluminationVctPtr gi(new Ogre2GlobalIlluminationVct);
+  bool result = this->InitObject(gi, _id, _name);
+
+  return (result) ? gi : nullptr;
+}
+
+//////////////////////////////////////////////////
 bool Ogre2Scene::InitObject(Ogre2ObjectPtr _object, unsigned int _id,
     const std::string &_name)
 {
@@ -1378,4 +1392,17 @@ void Ogre2Scene::SetSkyEnabled(bool _enabled)
 bool Ogre2Scene::SkyEnabled() const
 {
   return this->dataPtr->skyEnabled;
+}
+
+//////////////////////////////////////////////////
+void Ogre2Scene::SetActiveGlobalIllumination(GlobalIlluminationBasePtr _gi)
+{
+  if (this->dataPtr->activeGi != _gi)
+  {
+    if (this->dataPtr->activeGi)
+      this->dataPtr->activeGi->SetEnabled(false);
+    if (_gi)
+      _gi->SetEnabled(true);
+    this->dataPtr->activeGi = _gi;
+  }
 }
