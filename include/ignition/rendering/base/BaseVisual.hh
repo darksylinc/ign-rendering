@@ -89,6 +89,9 @@ namespace ignition
       public: virtual void SetVisible(bool _visible) override;
 
       // Documentation inherited.
+      public: virtual void SetVisualStatic(bool _static) override;
+
+      // Documentation inherited.
       public: virtual void SetVisibilityFlags(uint32_t _flags) override;
 
       // Documentation inherited.
@@ -373,6 +376,15 @@ namespace ignition
     void BaseVisual<T>::SetVisible(bool _visible)
     {
       ignerr << "SetVisible(" << _visible << ") not supported for "
+             << "render engine: " << this->Scene()->Engine()->Name()
+             << std::endl;
+    }
+
+    //////////////////////////////////////////////////
+    template <class T>
+    void BaseVisual<T>::SetVisualStatic(bool _static)
+    {
+      ignerr << "SetVisualStatic(" << _static << ") not supported for "
              << "render engine: " << this->Scene()->Engine()->Name()
              << std::endl;
     }
