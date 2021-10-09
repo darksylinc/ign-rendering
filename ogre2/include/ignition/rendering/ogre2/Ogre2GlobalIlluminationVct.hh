@@ -56,6 +56,9 @@ namespace ignition
       public: virtual void Build() override;
 
       // Documentation inherited
+      public: virtual void UpdateLighting() override;
+
+      // Documentation inherited
       public: virtual void SetResolution(const uint32_t _resolution[3])
           override;
 

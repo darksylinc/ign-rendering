@@ -55,6 +55,10 @@ namespace ignition
       public: virtual ~Ogre2Light();
 
       // Documentation Inherited
+      public: virtual void SetLocalPosition(const math::Vector3d &_position)
+          override;
+
+      // Documentation Inherited
       public: virtual math::Color DiffuseColor() const override;
 
       // Documentation Inherited

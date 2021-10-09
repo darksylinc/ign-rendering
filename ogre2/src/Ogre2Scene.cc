@@ -102,7 +102,10 @@ class ignition::rendering::Ogre2ScenePrivate
   public: const std::string kShadowNodeName = "PbsMaterialsShadowNode";
 
   /// \brief Active GI solution, if any
-  GlobalIlluminationBasePtr activeGi;
+  public: GlobalIlluminationBasePtr activeGi;
+
+  /// \brief See Ogre2Scene::SetLightsGiDirty
+  public: bool lightsGiDirty = false;
 };
 
 using namespace ignition;
@@ -217,6 +220,12 @@ void Ogre2Scene::PreRender()
     engine->OgreRoot()->_fireFrameStarted(evt);
 
     this->ogreSceneManager->updateSceneGraph();
+  }
+
+  if (this->dataPtr->lightsGiDirty)
+  {
+    this->dataPtr->activeGi->UpdateLighting();
+    this->dataPtr->lightsGiDirty = false;
   }
 }
 
@@ -1448,5 +1457,14 @@ void Ogre2Scene::SetActiveGlobalIllumination(GlobalIlluminationBasePtr _gi)
     if (_gi)
       _gi->SetEnabled(true);
     this->dataPtr->activeGi = _gi;
+  }
+}
+
+//////////////////////////////////////////////////
+void Ogre2Scene::SetLightsGiDirty()
+{
+  if (this->dataPtr->activeGi)
+  {
+    this->dataPtr->lightsGiDirty = true;
   }
 }
