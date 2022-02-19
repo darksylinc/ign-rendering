@@ -22,6 +22,8 @@
 #include "ignition/rendering/ogre2/Export.hh"
 #include "ignition/rendering/ogre2/Ogre2Object.hh"
 
+#include <memory>
+
 namespace Ogre
 {
   class HlmsPbs;
