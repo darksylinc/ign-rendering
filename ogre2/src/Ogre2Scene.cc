@@ -26,6 +26,7 @@
 #include "ignition/rendering/ogre2/Ogre2Conversions.hh"
 #include "ignition/rendering/ogre2/Ogre2DepthCamera.hh"
 #include "ignition/rendering/ogre2/Ogre2GizmoVisual.hh"
+#include "ignition/rendering/ogre2/Ogre2GlobalIlluminationCiVct.hh"
 #include "ignition/rendering/ogre2/Ogre2GlobalIlluminationVct.hh"
 #include "ignition/rendering/ogre2/Ogre2GpuRays.hh"
 #include "ignition/rendering/ogre2/Ogre2Grid.hh"
@@ -1295,6 +1296,16 @@ GlobalIlluminationVctPtr Ogre2Scene::CreateGlobalIlluminationVctImpl(
   unsigned int _id, const std::string &_name)
 {
   Ogre2GlobalIlluminationVctPtr gi(new Ogre2GlobalIlluminationVct);
+  bool result = this->InitObject(gi, _id, _name);
+
+  return (result) ? gi : nullptr;
+}
+
+//////////////////////////////////////////////////
+GlobalIlluminationCiVctPtr Ogre2Scene::CreateGlobalIlluminationCiVctImpl(
+  unsigned int _id, const std::string &_name)
+{
+  Ogre2GlobalIlluminationCiVctPtr gi(new Ogre2GlobalIlluminationCiVct);
   bool result = this->InitObject(gi, _id, _name);
 
   return (result) ? gi : nullptr;

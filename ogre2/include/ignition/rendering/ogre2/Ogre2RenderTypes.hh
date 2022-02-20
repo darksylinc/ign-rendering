@@ -37,6 +37,7 @@ namespace ignition
     class Ogre2DirectionalLight;
     class Ogre2Geometry;
     class Ogre2GizmoVisual;
+    class Ogre2GlobalIlluminationCiVct;
     class Ogre2GlobalIlluminationVct;
     class Ogre2GpuRays;
     class Ogre2Grid;
@@ -105,6 +106,8 @@ namespace ignition
     typedef shared_ptr<Ogre2Object>               Ogre2ObjectPtr;
     typedef shared_ptr<Ogre2ObjectInterface>      Ogre2ObjectInterfacePtr;
     typedef shared_ptr<Ogre2ParticleEmitter>      Ogre2ParticleEmitterPtr;
+    typedef shared_ptr<Ogre2GlobalIlluminationCiVct>
+      Ogre2GlobalIlluminationCiVctPtr;
     typedef shared_ptr<Ogre2GlobalIlluminationVct>
       Ogre2GlobalIlluminationVctPtr;
     typedef shared_ptr<Ogre2PointLight>           Ogre2PointLightPtr;
