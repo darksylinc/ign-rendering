@@ -572,7 +572,12 @@ void Ogre2RenderEngine::LoadPlugins()
          piter != plugins.end(); ++piter)
     {
       // check if plugin library exists
+#ifndef DEBUG
       std::string filename = piter->name + extension;
+#else
+      std::string filename = piter->name + "_d" + extension;
+#endif
+
       if (!common::exists(filename))
       {
         filename = filename + "." + std::string(OGRE2_VERSION);
@@ -954,6 +959,8 @@ void Ogre2RenderEngine::CreateResources()
         std::make_pair(p + "/Compute/Tools/Metal", "General"));
     archNames.push_back(
         std::make_pair(p + "/VCT", "General"));
+    archNames.push_back(
+        std::make_pair(p + "/VCT/ImageVoxelizer", "General"));
     archNames.push_back(
         std::make_pair(p + "/VCT/Visualizer", "General"));
     archNames.push_back(

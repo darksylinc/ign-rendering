@@ -74,7 +74,8 @@ class DETAIL_IGNITION_RENDERING_OGRE2_HIDDEN
 };
 
 //////////////////////////////////////////////////
-Ogre2CiVctCascade::Ogre2CiVctCascade() : dataPtr(new Ogre2CiVctCascadePrivate)
+Ogre2CiVctCascade::Ogre2CiVctCascade() :
+  dataPtr(std::make_unique<Ogre2CiVctCascadePrivate>())
 {
 }
 
@@ -82,7 +83,7 @@ Ogre2CiVctCascade::Ogre2CiVctCascade() : dataPtr(new Ogre2CiVctCascadePrivate)
 void Ogre2CiVctCascade::Init(Ogre::VctCascadeSetting *_cascade,
                              const CiVctCascade *_ref)
 {
-  IGN_ASSERT(this->dataPtr->cascade != nullptr,
+  IGN_ASSERT(this->dataPtr->cascade == nullptr,
              "Calling Ogre2CiVctCascade::Init twice!");
 
   this->dataPtr->cascade = _cascade;
@@ -159,6 +160,20 @@ const uint32_t *Ogre2CiVctCascade::OctantCount() const
 }
 
 //////////////////////////////////////////////////
+void Ogre2CiVctCascade::SetAreaHalfSize(
+  const ignition::math::Vector3d &_areaHalfSize)
+{
+  this->dataPtr->cascade->areaHalfSize =
+    Ogre2Conversions::Convert(_areaHalfSize);
+}
+
+//////////////////////////////////////////////////
+ignition::math::Vector3d Ogre2CiVctCascade::AreaHalfSize() const
+{
+  return Ogre2Conversions::Convert(this->dataPtr->cascade->areaHalfSize);
+}
+
+//////////////////////////////////////////////////
 void Ogre2CiVctCascade::SetCameraStepSize(
   const ignition::math::Vector3d &_stepSize)
 {
@@ -173,7 +188,7 @@ ignition::math::Vector3d Ogre2CiVctCascade::CameraStepSize() const
 
 //////////////////////////////////////////////////
 Ogre2GlobalIlluminationCiVct::Ogre2GlobalIlluminationCiVct() :
-  dataPtr(new Ogre2GlobalIlluminationCiVctPrivate)
+  dataPtr(std::make_unique<Ogre2GlobalIlluminationCiVctPrivate>())
 {
 }
 
@@ -341,8 +356,6 @@ void Ogre2GlobalIlluminationCiVct::SetEnabled(bool _enabled)
                  hlmsPbs->getVctLighting() ==
                    this->dataPtr->cascadedVoxelizer->getVctLighting(0u),
                "There's already an active GI solution!");
-
-    Build();
 
     hlmsPbs->setVctLighting(
       this->dataPtr->cascadedVoxelizer->getVctLighting(0u));
