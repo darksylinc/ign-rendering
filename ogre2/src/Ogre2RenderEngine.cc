@@ -1234,12 +1234,6 @@ NativeWindowPtr Ogre2RenderEngine::CreateNativeWindow(
 }
 
 //////////////////////////////////////////////////
-GraphicsAPI Ogre2RenderEngine::CurrentGraphicsAPI() const
-{
-  return this->dataPtr->graphicsAPI;
-}
-
-//////////////////////////////////////////////////
 void Ogre2RenderEngine::InitAttempt()
 {
   this->initialized = false;
