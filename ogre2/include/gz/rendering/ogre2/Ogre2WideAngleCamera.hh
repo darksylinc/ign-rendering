@@ -91,12 +91,21 @@ namespace gz
       /// \return Pointer to the render target
       protected: virtual RenderTargetPtr RenderTarget() const override;
 
+      /// \brief Changes the Compositor Definition to use the MSAA
+      /// settings we need. Do not call this if not using MSAA.
+      /// \param[in] _ogreCompMgr Ogre's Compositor Manager
+      /// \param[in] _msaa Value in range [2; 256)
+      protected: void SetupMSAA(Ogre::CompositorManager2 *_ogreCompMgr,
+                                uint8_t _msaa);
+
       /// \brief Saves the CompositorPassSceneDef of each of the 6 passes
       /// defined in WideAngleCamera.compositor data file for later
       /// manipulation.
       /// \param[in] _ogreCompMgr Ogre's Compositor Manager
+      /// \param[in] _withMsaa Whether the version we're retrieving is the MSAA
+      /// one
       private: void RetrieveCubePassSceneDefs(
-            Ogre::CompositorManager2 *_ogreCompMgr);
+            Ogre::CompositorManager2 *_ogreCompMgr, bool _withMsaa);
 
       /// \brief Called before each cubemap face is about to be rendered
       /// \param[in] _pass Compositor pass to set its clear colour

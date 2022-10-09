@@ -44,8 +44,6 @@
 #  pragma warning(pop)
 #endif
 
-#define TODO_fsaa
-
 // clang-format off
 namespace gz
 {
@@ -254,11 +252,30 @@ void Ogre2WideAngleCamera::CreateCamera()
 }
 
 //////////////////////////////////////////////////
-void Ogre2WideAngleCamera::RetrieveCubePassSceneDefs(
-  Ogre::CompositorManager2 *_ogreCompMgr)
+void Ogre2WideAngleCamera::SetupMSAA(Ogre::CompositorManager2 *_ogreCompMgr,
+                                     uint8_t _msaa)
 {
+  GZ_ASSERT(_msaa > 1u, "Wrong API usage. Don't call this function");
+
   Ogre::CompositorNodeDef *nodeDef =
-    _ogreCompMgr->getNodeDefinitionNonConst("WideAngleCamera");
+    _ogreCompMgr->getNodeDefinitionNonConst("WideAngleCameraCubemapPassMsaa");
+  auto &textureDefs = nodeDef->getLocalTextureDefinitionsNonConst();
+
+  GZ_ASSERT(textureDefs.size() == 1u,
+            "WideAngleCamera.compositor out of sync?");
+  GZ_ASSERT(textureDefs[0].getName() == "tmpMsaa",
+            "WideAngleCamera.compositor out of sync?");
+
+  textureDefs[0].fsaa = std::to_string(_msaa);
+}
+
+//////////////////////////////////////////////////
+void Ogre2WideAngleCamera::RetrieveCubePassSceneDefs(
+  Ogre::CompositorManager2 *_ogreCompMgr, bool _withMsaa)
+{
+  Ogre::CompositorNodeDef *nodeDef = _ogreCompMgr->getNodeDefinitionNonConst(
+    _withMsaa ? "WideAngleCameraCubemapPassMsaa"
+              : "WideAngleCameraCubemapPass");
   for (uint32_t i = 0u; i < kWideAngleNumCubemapFaces; ++i)
   {
     Ogre::CompositorTargetDef *target0 = nodeDef->getTargetPass(i);
@@ -320,9 +337,6 @@ void Ogre2WideAngleCamera::CreateWideAngleTexture()
   this->dataPtr->envCubeMapTexture->setResolution(
     this->dataPtr->envTextureSize, this->dataPtr->envTextureSize);
   this->dataPtr->envCubeMapTexture->setPixelFormat(Ogre::PFG_RGBA8_UNORM_SRGB);
-  TODO_fsaa;
-  // this->dataPtr->envCubeMapTexture->setSampleDescription(
-  //   Ogre2RenderTarget::TargetFSAA(static_cast<uint8_t>(this->antiAliasing)));
 
   this->dataPtr->envCubeMapTexture->scheduleTransitionTo(
     Ogre::GpuResidency::Resident);
@@ -331,7 +345,15 @@ void Ogre2WideAngleCamera::CreateWideAngleTexture()
   Ogre::CompositorManager2 *ogreCompMgr = ogreRoot->getCompositorManager2();
   Ogre::SceneManager *ogreSceneManager = this->scene->OgreSceneManager();
 
-  this->RetrieveCubePassSceneDefs(ogreCompMgr);
+  const uint8_t msaa =
+    Ogre2RenderTarget::TargetFSAA(static_cast<uint8_t>(this->antiAliasing));
+
+  if (msaa > 1u)
+  {
+    SetupMSAA(ogreCompMgr, msaa);
+  }
+
+  this->RetrieveCubePassSceneDefs(ogreCompMgr, msaa > 1u);
 
   const Ogre::CompositorChannelVec channels = {
     this->dataPtr->envCubeMapTexture, this->dataPtr->ogreRenderTexture
@@ -618,15 +640,13 @@ void Ogre2WideAngleCamera::PrepareForFinalPass(Ogre::Pass *_pass)
 void Ogre2WideAngleCameraWorkspaceListenerPrivate::passPreExecute(
   Ogre::CompositorPass *_pass)
 {
-  if (_pass->getDefinition()->mIdentifier == kWideAngleCameraCubemapPassId)
+  const uint32_t identifier = _pass->getDefinition()->mIdentifier;
+  if (identifier == kWideAngleCameraCubemapPassId)
   {
     this->owner.PrepareForCubemapFacePass(_pass);
   }
-  else
+  else if (identifier == kWideAngleCameraQuadPassId)
   {
-    GZ_ASSERT(
-      _pass->getDefinition()->mIdentifier == kWideAngleCameraQuadPassId,
-      "Impossible! Corrupted memory? WideAngleCamera.compositor out of sync?");
     GZ_ASSERT(
       dynamic_cast<Ogre::CompositorPassQuad *>(_pass),
       "Impossible! Corrupted memory? WideAngleCamera.compositor out of sync?");

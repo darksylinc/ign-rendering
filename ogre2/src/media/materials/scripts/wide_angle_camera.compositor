@@ -16,7 +16,7 @@ abstract target cubemap_target
     overlays			off
     camera_cubemap_reorient true
 
-    // shadows LocalCubemapsShadowNode recalculate
+    shadows PbsMaterialsShadowNode recalculate
 
     profiling_id "Cubemap WideAngleCamera pass"
 
@@ -25,10 +25,9 @@ abstract target cubemap_target
   }
 }
 
-compositor_node WideAngleCamera
+compositor_node WideAngleCameraCubemapPass
 {
   in 0 cubeTexture
-  in 1 finalOutput
 
   target cubeTexture  +X : cubemap_target { }
   target cubeTexture  -X : cubemap_target { }
@@ -36,6 +35,33 @@ compositor_node WideAngleCamera
   target cubeTexture  -Y : cubemap_target { }
   target cubeTexture  +Z : cubemap_target { }
   target cubeTexture  -Z : cubemap_target { }
+}
+
+compositor_node WideAngleCameraCubemapPassMsaa
+{
+  in 0 cubeTexture
+
+  texture tmpMsaa target_width target_height target_format msaa 4 explicit_resolve
+
+  rtv mixedCubemapRtv
+  {
+    // Specify we want to render to tmpMsaa at slot[0]
+    // but we want to resolve to tmpCubemap
+    colour	0 tmpMsaa resolve cubeTexture
+  }
+
+  target mixedCubemapRtv  +X : cubemap_target { }
+  target mixedCubemapRtv  -X : cubemap_target { }
+  target mixedCubemapRtv  +Y : cubemap_target { }
+  target mixedCubemapRtv  -Y : cubemap_target { }
+  target mixedCubemapRtv  +Z : cubemap_target { }
+  target mixedCubemapRtv  -Z : cubemap_target { }
+}
+
+compositor_node WideAngleCameraFinalPass
+{
+  in 0 cubeTexture
+  in 1 finalOutput
 
   target finalOutput
   {
@@ -65,6 +91,16 @@ compositor_node WideAngleCamera
 
 workspace WideAngleCameraWorkspace
 {
-  connect_external 0 WideAngleCamera 0
-  connect_external 1 WideAngleCamera 1
+  connect_external 0 WideAngleCameraCubemapPass 0
+
+  connect_external 0 WideAngleCameraFinalPass 0
+  connect_external 1 WideAngleCameraFinalPass 1
+}
+
+workspace WideAngleCameraWorkspaceMsaa
+{
+  connect_external 0 WideAngleCameraCubemapPassMsaa 0
+
+  connect_external 0 WideAngleCameraFinalPass 0
+  connect_external 1 WideAngleCameraFinalPass 1
 }
