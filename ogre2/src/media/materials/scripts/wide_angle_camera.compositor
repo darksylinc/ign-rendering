@@ -1,0 +1,65 @@
+abstract target cubemap_target
+{
+  pass render_scene
+  {
+    load
+    {
+      all           clear
+      clear_colour  0 0 0 1
+    }
+    store
+    {
+      depth         dont_care
+      stencil       dont_care
+    }
+
+    overlays			off
+    camera_cubemap_reorient true
+
+    // shadows LocalCubemapsShadowNode recalculate
+
+    profiling_id "Cubemap WideAngleCamera pass"
+
+    // kWideAngleCameraCubemapPassId
+    identifier 1276660
+  }
+}
+
+compositor_node WideAngleCamera
+{
+  in 0 cubeTexture
+  in 1 finalOutput
+
+  target cubeTexture  +X : cubemap_target { }
+  target cubeTexture  -X : cubemap_target { }
+  target cubeTexture  +Y : cubemap_target { }
+  target cubeTexture  -Y : cubemap_target { }
+  target cubeTexture  +Z : cubemap_target { }
+  target cubeTexture  -Z : cubemap_target { }
+
+  target finalOutput
+  {
+    pass render_quad
+    {
+      load
+      {
+        all dont_care
+      }
+
+      // kWideAngleCameraQuadPassId
+      identifier 1276661
+
+      profiling_id "Map Cubemap to Wide Lens"
+
+      material WideLensMap
+
+      input 0 cubeTexture
+    }
+  }
+}
+
+workspace WideAngleCameraWorkspace
+{
+  connect_external 0 WideAngleCamera 0
+  connect_external 1 WideAngleCamera 1
+}
