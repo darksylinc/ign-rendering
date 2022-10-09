@@ -45,6 +45,11 @@ compositor_node WideAngleCamera
       {
         all dont_care
       }
+      store
+      {
+        depth   dont_care
+        stencil dont_care
+      }
 
       // kWideAngleCameraQuadPassId
       identifier 1276661

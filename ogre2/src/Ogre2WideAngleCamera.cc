@@ -32,6 +32,7 @@
 #include <Compositor/OgreCompositorWorkspaceListener.h>
 #include <Compositor/Pass/PassQuad/OgreCompositorPassQuad.h>
 #include <Compositor/Pass/PassScene/OgreCompositorPassSceneDef.h>
+#include <OgreDepthBuffer.h>
 #include <OgreImage2.h>
 #include <OgrePass.h>
 #include <OgreRoot.h>
@@ -302,6 +303,8 @@ void Ogre2WideAngleCamera::CreateWideAngleTexture()
                                                     this->ImageHeight());
     this->dataPtr->ogreRenderTexture->setPixelFormat(
       Ogre::PFG_RGBA8_UNORM_SRGB);
+    this->dataPtr->ogreRenderTexture->_setDepthBufferDefaults(
+      Ogre::DepthBuffer::POOL_NO_DEPTH, false, Ogre::PFG_UNKNOWN);
     this->dataPtr->ogreRenderTexture->scheduleTransitionTo(
       Ogre::GpuResidency::Resident);
   }
@@ -331,7 +334,7 @@ void Ogre2WideAngleCamera::CreateWideAngleTexture()
   this->RetrieveCubePassSceneDefs(ogreCompMgr);
 
   const Ogre::CompositorChannelVec channels = {
-    this->dataPtr->ogreRenderTexture, this->dataPtr->envCubeMapTexture
+    this->dataPtr->envCubeMapTexture, this->dataPtr->ogreRenderTexture
   };
 
   this->dataPtr->ogreCompositorWorkspace = ogreCompMgr->addWorkspace(
